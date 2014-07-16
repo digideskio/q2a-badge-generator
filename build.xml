@@ -1,0 +1,77 @@
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="badge-generator" default="build" basedir=".">
+
+   <!-- Project description -->	
+   <description>
+      Default description
+   </description>
+
+   <echo message="Running under - ${os.name}"/>
+
+   <!-- load environment variables and properties -->
+   <property environment="env" />
+   <property file="build.properties" />
+
+   <!-- Project properties -->	
+   <property name="run.args"           value="" />
+   <property name="compile.args"       value="" />    <!-- "-Xlint:all,-path,-unchecked" -->
+   <property name="compile.debug"      value="true" />
+   <property name="compile.debuglevel" value="lines,vars,source" />
+
+   <!-- Classpath settings -->	
+   <property name="jar.dir"            value="${build.dir}/jar"/>
+   <property name="main.src.dir"       value="${src.dir}/java"/>
+   <property name="main.classes.dir"   value="${build.dir}/classes"/>
+
+   <!-- classpath settings -->	
+   <path id="classpath">
+     <pathelement location="${main.classes.dir}" />
+     <fileset dir="${lib.dir}" includes="**/*.jar"/>
+   </path>
+
+   <target name="resolve" description="--> retrieve dependencies with ivy">
+      <ivy:retrieve />
+   </target>
+
+   <!-- Targets -->	
+   <target name="build" depends="clean, init, jar"/>
+   
+   <target name="init" depends="clean">
+     <mkdir dir="${build.dir}"/>
+     <mkdir dir="${main.classes.dir}"/>
+   </target>
+
+   <target name="clean" description="Delete temporary folders">
+     <delete dir="${build.dir}" failonerror="false" deleteonexit="true" />
+   </target>
+
+   <target name="compile" depends="init, resolve">
+     <javac deprecation="true" srcdir="${main.src.dir}" destdir="${main.classes.dir}"
+             debug="${compile.debug}"
+             debuglevel="${compile.debuglevel}">
+         <compilerarg value="-Xlint"/>
+         <compilerarg line="${compile.args}" /> 
+         <classpath refid="classpath"/>
+     </javac>     
+   </target>
+
+    <target name="jar" depends="compile">
+      <mkdir dir="${jar.dir}"/>
+      <jar destfile="${jar.dir}/${project.name}.jar" basedir="${main.classes.dir}">
+         <manifest>
+            <attribute name="Main-Class" value="${main.class}"/>
+         </manifest>
+      </jar>
+    </target>
+
+    <target name="dist" depends="jar">
+      <mkdir dir="${dist.dir}"/>
+      <jar destfile="${dist.dir}/${project.name}.jar" basedir="${main.classes.dir}">
+         <manifest>
+            <attribute name="Main-Class" value="${main.class}"/>
+         </manifest>
+      <zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
+      <zipgroupfileset dir="${jar.dir}" includes="*.jar"/>      
+      </jar>
+    </target>
+
+</project>

@@ -1,0 +1,6 @@
+<ivy-module version="2.0">
+    <info organisation="net.taunova" module="q2a-badge-generator"/>
+    <dependencies>
+        <dependency org="org.jsoup" name="jsoup" rev="1.7.2" conf="default"/>
+    </dependencies>
+</ivy-module>

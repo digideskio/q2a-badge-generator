@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>site.name</comment>
+<entry key="color.text">1e5700</entry>
+<entry key="color.bar">97c297</entry>
+<entry key="site.name">leoles.info</entry>
+<entry key="site.title">вырастим все!</entry>
+</properties>
