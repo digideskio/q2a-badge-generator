@@ -104,20 +104,20 @@ public class BadgeGenerator {
         BufferedImage backImage = readBackImage();
         BufferedImage topImage = readTopImage();
 
-        List<Map> topUsers = new ArrayList<>();
+        List<Map<Object, String>> topUsers = new ArrayList<>();
 
         try {
             URL pageUrl = new URL(siteName + "/users");
             List<String> users = parseUserPage(pageUrl);
             for (String user : users) {
                 System.out.println(" --- " + user + " ---------------");
-                Map data = parseUser(user);
+                Map<Object, String> data = parseUser(user);
 
                 if (null != backImage) {
                     generateBadge(user, cleanName, data, createCanvasImage(backImage));
                 }
 
-                int rank = Integer.parseInt((String) data.get(User.RANK));
+                int rank = Integer.parseInt(data.get(User.RANK));
                 if (rank <= TOP_SIZE) {
                     topUsers.add(rank - 1, data);
                 }
@@ -126,19 +126,19 @@ public class BadgeGenerator {
             if (null != topImage) {
                 generateTopImages(topUsers, cleanName, topImage);
             }
-        } catch (Exception ex) {
+        } catch (IOException | NumberFormatException ex) {
             ex.printStackTrace();
         }
     }
 
-    public void generateTopImages(List<Map> topUsers, String siteName, BufferedImage topImage) throws IOException {
+    public void generateTopImages(List<Map<Object, String>> topUsers, String siteName, BufferedImage topImage) throws IOException {
         int maxScore = getUserScore(topUsers.get(0));
 
         BufferedImage summaryImage = createCanvasImage(topImage.getWidth(), topUsers.size() * topImage.getHeight());
         Graphics2D summaryGraphics = summaryImage.createGraphics();
 
         int offset = 0;
-        for (Map userData : topUsers) {
+        for (Map<Object, String> userData : topUsers) {
             BufferedImage userImage = createCanvasImage(topImage);
             generateTop(siteName, userData, maxScore, userImage);
             summaryGraphics.drawImage(userImage, 0, offset, null);
@@ -150,15 +150,15 @@ public class BadgeGenerator {
         ImageIO.write(summaryImage, "png", new File(resultPath + File.separator + "000_top.png"));
     }
 
-    public int getUserScore(Map data) {
-        String points = (String) data.get(User.POINTS);
+    public int getUserScore(Map<Object, String> data) {
+        String points = data.get(User.POINTS);
         return Integer.parseInt(points.replace(",", ""));
 
     }
 
     protected List<String> parseUserPage(URL pageUrl) throws IOException {
         List<String> users = new LinkedList<>();
-        Document usersDoc = Helper.parse(pageUrl, DEFAULT_TIMEOUT);
+        Document usersDoc = Util.parse(pageUrl, DEFAULT_TIMEOUT);
 
         Iterator<Element> userIterator = usersDoc.select("a.qa-user-link").iterator();
 
@@ -183,14 +183,14 @@ public class BadgeGenerator {
         return siteName;
     }
 
-    protected Map parseUser(String userName) throws IOException {
+    protected Map<Object, String> parseUser(String userName) throws IOException {
         final String cleanUserName = userName;
         userName = encodeUserName(userName);
 
         URL userPageUrl = new URL(siteName + "/user/" + userName);
-        Document userDoc = Helper.parse(userPageUrl, DEFAULT_TIMEOUT);
+        Document userDoc = Util.parse(userPageUrl, DEFAULT_TIMEOUT);
 
-        Map<Object, String> data = new HashMap();
+        Map<Object, String> data = new HashMap<>();
 
         Object[] values = {
             User.POINTS, "span.qa-uf-user-points", "0",
@@ -200,7 +200,7 @@ public class BadgeGenerator {
             User.SELECTED, "span.qa-uf-user-a-selecteds", "0",};
 
         for (int i = 0; i < values.length; i += 3) {
-            String value = userDoc.select((String) values[i + 1]).text().trim();
+            String value = userDoc.select((String)values[i + 1]).text().trim();
             if (!value.isEmpty()) {
                 data.put(values[i], value);
             } else {
@@ -210,7 +210,6 @@ public class BadgeGenerator {
 
         String imageUrl = userDoc.select("img.qa-avatar-image").attr("src");
 
-
         String imageSrc = (imageUrl.startsWith("http")) ? imageUrl : siteName + "/user/" + imageUrl;
         System.out.println("user image: " + imageSrc);
         data.put(User.IMAGE, imageSrc);
@@ -218,12 +217,12 @@ public class BadgeGenerator {
         return data;
     }
 
-    protected void generateTop(String siteName, Map data, int max, BufferedImage topImage) throws IOException {
+    protected void generateTop(String siteName, Map<Object, String> data, int max, BufferedImage topImage) throws IOException {
         final int rankOffset = 3;
         final int nameOffset = 20;
         final int pointsOffset = 158;
 
-        String userName = (String) data.get(User.NAME);
+        String userName = data.get(User.NAME);
         Graphics2D backGraphics = (Graphics2D) topImage.getGraphics();
 
         backGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -233,8 +232,8 @@ public class BadgeGenerator {
         backGraphics.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
 
-        String rank = (String) data.get(User.RANK);
-        String points = (String) data.get(User.POINTS);
+        String rank = data.get(User.RANK);
+        String points = data.get(User.POINTS);
 
         Font f2 = null;
         final int fontSize = 12;
@@ -278,7 +277,7 @@ public class BadgeGenerator {
         ImageIO.write(topImage, "png", new File(resultPath + File.separator + "00" + rank + "_top" + ".png"));
     }
 
-    protected void generateBadge(String userName, String siteName, Map data, BufferedImage backImage) throws IOException {
+    protected void generateBadge(String userName, String siteName, Map<Object, String> data, BufferedImage backImage) throws IOException {
         int width = backImage.getWidth();
         int height = backImage.getHeight();
 
@@ -291,11 +290,11 @@ public class BadgeGenerator {
         backGraphics.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
 
-        String points = (String) data.get(User.POINTS);
-        String rank = (String) data.get(User.RANK);
-        String answers = (String) data.get(User.ANSWERS);
-        String selected = (String) data.get(User.SELECTED);
-        String questions = (String) data.get(User.QUESTIONS);
+        String points = data.get(User.POINTS);
+        String rank = data.get(User.RANK);
+        String answers =  data.get(User.ANSWERS);
+        String selected =  data.get(User.SELECTED);
+        String questions =  data.get(User.QUESTIONS);
 
         String line0 = siteName + " - " + siteText;
         String line1 = userName;
@@ -337,7 +336,7 @@ public class BadgeGenerator {
         backGraphics.drawString(line3, xoffset, 52);
 
         if (data.containsKey(User.IMAGE)) {
-            BufferedImage userPic = ImageIO.read(new URL((String) data.get(User.IMAGE)));
+            BufferedImage userPic = ImageIO.read(new URL( data.get(User.IMAGE)));
 
             int yoffset = padding - 1;
             int swidth = height - 2 * padding;
@@ -361,7 +360,7 @@ public class BadgeGenerator {
             resultFolder.mkdirs();
         }
     }
-    
+
     public static void main(String[] args) throws IOException {
         if (args.length < 1) {
             System.out.println("you have to specify a property file with all required parameters");
@@ -377,5 +376,5 @@ public class BadgeGenerator {
                 new Color(Integer.parseInt(p.getProperty(COLOR_BAR), 16)));
 
         generator.process();
-    }    
+    }
 }

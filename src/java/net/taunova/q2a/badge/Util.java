@@ -8,7 +8,7 @@ import org.jsoup.nodes.Document;
 /**
  * JSoup utilities.
  */
-public class Helper {
+public class Util {
 
     /**
      *
