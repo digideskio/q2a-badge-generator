@@ -7,8 +7,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -68,34 +66,11 @@ public class BadgeGenerator {
     }
 
     protected BufferedImage readBackImage() throws IOException {
-        return readImage("background");
+        return Util.readImage("background", cleanName);
     }
 
     protected BufferedImage readTopImage() throws IOException {
-        return readImage("top");
-    }
-
-    protected BufferedImage readImage(String name) throws IOException {
-        BufferedImage backImage = null;
-        String fileName = "resources/" + name + "-" + cleanName + ".png";
-        try {
-            backImage = ImageIO.read(new File(fileName));
-        } catch (IOException e) {
-            System.err.println("Can't read image file: " + fileName);
-        }
-
-        return backImage;
-    }
-
-    protected BufferedImage createCanvasImage(BufferedImage backImage) {
-        ColorModel cm = backImage.getColorModel();
-        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-        WritableRaster raster = backImage.copyData(null);
-        return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-    }
-
-    protected BufferedImage createCanvasImage(int width, int height) {
-        return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        return Util.readImage("top", cleanName);
     }
 
     protected void process() throws IOException {
@@ -114,7 +89,7 @@ public class BadgeGenerator {
                 Map<Object, String> data = parseUser(user);
 
                 if (null != backImage) {
-                    generateBadge(user, cleanName, data, createCanvasImage(backImage));
+                    generateBadge(user, cleanName, data, Util.createCanvasImage(backImage));
                 }
 
                 int rank = Integer.parseInt(data.get(User.RANK));
@@ -134,26 +109,25 @@ public class BadgeGenerator {
     public void generateTopImages(List<Map<Object, String>> topUsers, String siteName, BufferedImage topImage) throws IOException {
         int maxScore = getUserScore(topUsers.get(0));
 
-        BufferedImage summaryImage = createCanvasImage(topImage.getWidth(), topUsers.size() * topImage.getHeight());
+        BufferedImage summaryImage = Util.createCanvasImage(topImage.getWidth(), topUsers.size() * topImage.getHeight());
         Graphics2D summaryGraphics = summaryImage.createGraphics();
 
         int offset = 0;
         for (Map<Object, String> userData : topUsers) {
-            BufferedImage userImage = createCanvasImage(topImage);
+            BufferedImage userImage = Util.createCanvasImage(topImage);
             generateTop(siteName, userData, maxScore, userImage);
             summaryGraphics.drawImage(userImage, 0, offset, null);
             offset += topImage.getHeight();
         }
 
         String resultPath = "result/" + encodeSiteName(siteName);
-        checkFilePath(resultPath);
+        Util.checkFilePath(resultPath);
         ImageIO.write(summaryImage, "png", new File(resultPath + File.separator + "000_top.png"));
     }
 
     public int getUserScore(Map<Object, String> data) {
         String points = data.get(User.POINTS);
         return Integer.parseInt(points.replace(",", ""));
-
     }
 
     protected List<String> parseUserPage(URL pageUrl) throws IOException {
@@ -200,7 +174,7 @@ public class BadgeGenerator {
             User.SELECTED, "span.qa-uf-user-a-selecteds", "0",};
 
         for (int i = 0; i < values.length; i += 3) {
-            String value = userDoc.select((String)values[i + 1]).text().trim();
+            String value = userDoc.select((String) values[i + 1]).text().trim();
             if (!value.isEmpty()) {
                 data.put(values[i], value);
             } else {
@@ -273,7 +247,7 @@ public class BadgeGenerator {
         backGraphics.drawString(userName, nameOffset, hoffset);
 
         String resultPath = "result/" + encodeSiteName(siteName);
-        checkFilePath(resultPath);
+        Util.checkFilePath(resultPath);
         ImageIO.write(topImage, "png", new File(resultPath + File.separator + "00" + rank + "_top" + ".png"));
     }
 
@@ -292,9 +266,9 @@ public class BadgeGenerator {
 
         String points = data.get(User.POINTS);
         String rank = data.get(User.RANK);
-        String answers =  data.get(User.ANSWERS);
-        String selected =  data.get(User.SELECTED);
-        String questions =  data.get(User.QUESTIONS);
+        String answers = data.get(User.ANSWERS);
+        String selected = data.get(User.SELECTED);
+        String questions = data.get(User.QUESTIONS);
 
         String line0 = siteName + " - " + siteText;
         String line1 = userName;
@@ -336,7 +310,7 @@ public class BadgeGenerator {
         backGraphics.drawString(line3, xoffset, 52);
 
         if (data.containsKey(User.IMAGE)) {
-            BufferedImage userPic = ImageIO.read(new URL( data.get(User.IMAGE)));
+            BufferedImage userPic = ImageIO.read(new URL(data.get(User.IMAGE)));
 
             int yoffset = padding - 1;
             int swidth = height - 2 * padding;
@@ -349,16 +323,9 @@ public class BadgeGenerator {
 
         // write image
         String resultPath = "result/" + encodeSiteName(siteName);
-        checkFilePath(resultPath);
+        Util.checkFilePath(resultPath);
 
         ImageIO.write(backImage, "png", new File(resultPath + File.separator + encodeUserName(userName) + ".png"));
-    }
-
-    public void checkFilePath(String resultPath) {
-        File resultFolder = new File(resultPath);
-        if (!resultFolder.isDirectory()) {
-            resultFolder.mkdirs();
-        }
     }
 
     public static void main(String[] args) throws IOException {
