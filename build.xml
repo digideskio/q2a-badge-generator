@@ -1,4 +1,4 @@
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="badge-generator" default="build" basedir=".">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="q2a-badge-generator" default="build" basedir=".">
 
    <!-- Project description -->	
    <description>
@@ -12,9 +12,8 @@
    <property file="build.properties" />
 
    <!-- Project properties -->	
-   <property name="run.args"           value="" />
    <property name="compile.args"       value="" />    <!-- "-Xlint:all,-path,-unchecked" -->
-   <property name="compile.debug"      value="true" />
+   <property name="compile.debug"      value="false" />
    <property name="compile.debuglevel" value="lines,vars,source" />
 
    <!-- Classpath settings -->	
@@ -28,11 +27,11 @@
      <fileset dir="${lib.dir}" includes="**/*.jar"/>
    </path>
 
+   <!-- Targets -->	
    <target name="resolve" description="--> retrieve dependencies with ivy">
       <ivy:retrieve />
    </target>
 
-   <!-- Targets -->	
    <target name="build" depends="clean, init, jar"/>
    
    <target name="init" depends="clean">
@@ -56,7 +55,7 @@
 
     <target name="jar" depends="compile">
       <mkdir dir="${jar.dir}"/>
-      <jar destfile="${jar.dir}/${project.name}.jar" basedir="${main.classes.dir}">
+      <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${main.classes.dir}">
          <manifest>
             <attribute name="Main-Class" value="${main.class}"/>
          </manifest>
@@ -65,7 +64,7 @@
 
     <target name="dist" depends="jar">
       <mkdir dir="${dist.dir}"/>
-      <jar destfile="${dist.dir}/${project.name}.jar" basedir="${main.classes.dir}">
+      <jar destfile="${dist.dir}/${ant.project.name}.jar" basedir="${main.classes.dir}">
          <manifest>
             <attribute name="Main-Class" value="${main.class}"/>
          </manifest>
@@ -73,5 +72,20 @@
       <zipgroupfileset dir="${jar.dir}" includes="*.jar"/>      
       </jar>
     </target>
+
+   <target name="publish-local" depends="dist" description="--> publish this project in the local ivy repository">
+      <tstamp>
+        <format property="build.date" pattern="yyyyMMddHHmmss" />
+      </tstamp>
+      <ivy:publish artifactspattern="${dist.dir}/[artifact].[ext]" 
+                    overwrite="true"
+                    resolver="local"
+                    pubrevision="${version}"
+                    pubdate="${build.date}"
+                    status="integration"
+                    forcedeliver="true"
+      />
+      <echo message="project ${ant.project.name} published locally with version ${version}" />
+   </target>
 
 </project>

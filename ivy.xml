@@ -1,6 +1,14 @@
 <ivy-module version="2.0">
-    <info organisation="net.taunova" module="q2a-badge-generator"/>
+    <info organisation="net.taunova" module="q2a-badge-generator" status="integration"/>
+   <configurations>
+      <conf name="compile"/>
+      <conf name="runtime"/>
+      <conf name="standalone" extends="runtime"/>
+    </configurations>
+    <publications>
+      <artifact name="q2a-badge-generator" type="jar" conf="runtime"/>
+    </publications>
     <dependencies>
-        <dependency org="org.jsoup" name="jsoup" rev="1.7.2" conf="default"/>
+        <dependency org="org.jsoup" name="jsoup" rev="1.7.2" conf="compile, runtime"/>
     </dependencies>
 </ivy-module>
