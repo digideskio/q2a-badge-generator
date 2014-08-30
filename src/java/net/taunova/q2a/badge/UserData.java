@@ -40,6 +40,6 @@ public class UserData {
     
     @Override
     public String toString() {
-        return "User: #" + attributes.get(User.RANK) + "  " + name;
+        return "User: #" + attributes.get(User.SCORE) + "  " + name;
     }
 }

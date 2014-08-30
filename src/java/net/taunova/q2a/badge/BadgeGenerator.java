@@ -37,7 +37,7 @@ public class BadgeGenerator {
     enum User {
         NAME,
         POINTS,
-        RANK,
+        SCORE,
         QUESTIONS,
         ANSWERS,
         SELECTED,
@@ -77,7 +77,7 @@ public class BadgeGenerator {
         BufferedImage backImage = readBackImage();
         BufferedImage topImage = readTopImage();
 
-        Map<Integer, UserData> rankMap = new TreeMap<>();
+        Map<String, UserData> rankMap = new TreeMap<>();
         
         try {
             URL pageUrl = new URL(siteName + "/users");
@@ -90,9 +90,11 @@ public class BadgeGenerator {
                 if (null != backImage) {
                     generateBadge(user, cleanName, data, Util.createCanvasImage(backImage));
                 }
-
-                int rank = Integer.parseInt(data.getAttr(User.RANK));
-                rankMap.put(rank, data);
+              
+                // Some users can have same score, so key should be unique
+                int score = Integer.parseInt(data.getAttr(User.SCORE));
+                String key = String.format("%010d", score) + "-" + user;
+                rankMap.put(key, data);
             }
 
             if (null != topImage) {
@@ -103,7 +105,7 @@ public class BadgeGenerator {
         }
     }
    
-    public void generateTopImages(Map<Integer, UserData> rankMap, String siteName, BufferedImage topImage) throws IOException {
+    public void generateTopImages(Map<String, UserData> rankMap, String siteName, BufferedImage topImage) throws IOException {
         Iterator<UserData> users = rankMap.values().iterator();        
         int maxScore = users.next().getUserScore();
         
@@ -117,7 +119,7 @@ public class BadgeGenerator {
                 
         while (users.hasNext() && iteration-- > 0) {
             UserData userData = users.next();
-            System.out.println(" user rank: " + userData.getAttr(User.RANK));
+            System.out.println(" user rank: " + userData.getAttr(User.SCORE));
             BufferedImage userImage = Util.createCanvasImage(topImage);
             generateTop(siteName, userData, maxScore, userImage);
             summaryGraphics.drawImage(userImage, 0, offset, null);
@@ -167,7 +169,7 @@ public class BadgeGenerator {
 
         Object[] values = {
             User.POINTS, "span.qa-uf-user-points", "0",
-            User.RANK, "span.qa-uf-user-rank", "-",
+            User.SCORE, "span.qa-uf-user-rank", "-",
             User.QUESTIONS, "span.qa-uf-user-q-posts", "0",
             User.ANSWERS, "span.qa-uf-user-a-posts", "0",
             User.SELECTED, "span.qa-uf-user-a-selecteds", "0",};
@@ -205,7 +207,7 @@ public class BadgeGenerator {
         backGraphics.setRenderingHint(RenderingHints.KEY_RENDERING,
                 RenderingHints.VALUE_RENDER_QUALITY);
 
-        String rank = data.getAttr(User.RANK);
+        String rank = data.getAttr(User.SCORE);
         String points = data.getAttr(User.POINTS);
 
         Font f2 = null;
@@ -264,7 +266,7 @@ public class BadgeGenerator {
                 RenderingHints.VALUE_RENDER_QUALITY);
 
         String points = data.getAttr(User.POINTS);
-        String rank = data.getAttr(User.RANK);
+        String rank = data.getAttr(User.SCORE);
         String answers = data.getAttr(User.ANSWERS);
         String selected = data.getAttr(User.SELECTED);
         String questions = data.getAttr(User.QUESTIONS);
