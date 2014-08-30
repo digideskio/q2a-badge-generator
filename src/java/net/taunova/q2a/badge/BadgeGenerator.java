@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,7 +77,7 @@ public class BadgeGenerator {
         BufferedImage backImage = readBackImage();
         BufferedImage topImage = readTopImage();
 
-        Map<String, UserData> rankMap = new TreeMap<>();
+        Map<Integer, UserData> rankMap = new TreeMap<>();
         
         try {
             URL pageUrl = new URL(siteName + "/users");
@@ -91,7 +92,7 @@ public class BadgeGenerator {
                 }
 
                 int rank = Integer.parseInt(data.getAttr(User.RANK));
-                rankMap.put(rank + "-" + data.getName(), data);
+                rankMap.put(rank, data);
             }
 
             if (null != topImage) {
@@ -102,7 +103,7 @@ public class BadgeGenerator {
         }
     }
    
-    public void generateTopImages(Map<String, UserData> rankMap, String siteName, BufferedImage topImage) throws IOException {
+    public void generateTopImages(Map<Integer, UserData> rankMap, String siteName, BufferedImage topImage) throws IOException {
         Iterator<UserData> users = rankMap.values().iterator();        
         int maxScore = users.next().getUserScore();
         
@@ -120,11 +121,7 @@ public class BadgeGenerator {
             BufferedImage userImage = Util.createCanvasImage(topImage);
             generateTop(siteName, userData, maxScore, userImage);
             summaryGraphics.drawImage(userImage, 0, offset, null);
-            offset += topImage.getHeight();
-            
-            if(iteration-- == 0) {
-                break;
-            }
+            offset += topImage.getHeight();            
         }
 
         String resultPath = "result/" + encodeSiteName(siteName);
