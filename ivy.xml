@@ -9,6 +9,6 @@
       <artifact name="q2a-badge-generator" type="jar" conf="runtime"/>
     </publications>
     <dependencies>
-        <dependency org="org.jsoup" name="jsoup" rev="1.7.2" conf="compile, runtime"/>
+        <dependency org="org.jsoup" name="jsoup" rev="1.7.2" conf="compile->master"/>
     </dependencies>
 </ivy-module>

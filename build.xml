@@ -29,7 +29,7 @@
 
    <!-- Targets -->	
    <target name="resolve" description="--> retrieve dependencies with ivy">
-      <ivy:retrieve />
+      <ivy:retrieve type="jar,bundle"/>
    </target>
 
    <target name="build" depends="clean, init, jar"/>
